@@ -13,8 +13,8 @@ class PrototypesController < ApplicationController
 
   def create
     @prototype = Prototype.new(prototype_params)
-  if@prototype.save
-      redirect_to root_path
+  if @prototype.save
+      redirect_to action: :index
   else
     render :new
     end
@@ -31,12 +31,10 @@ class PrototypesController < ApplicationController
   end
 
   def update
-    prototype = Prototype.find(params[:id])
-    prototype.update(prototype_params)
-    if prototype.save
-      redirect_to root_path(@prototype)
+    @prototype = Prototype.find(params[:id])
+    if @prototype.update(prototype_params)
+       redirect_to prototype_path(@prototype.id)
   else
-      @prototype = @user.prototype.includes(:user)
       render :edit
     end
   end
@@ -58,4 +56,24 @@ class PrototypesController < ApplicationController
       redirect_to action: :index
     end
   end
+
+  def move_to_edit
+    unless user_signed_in?
+      redirect_to action: :index
+    end
+  end
+
+  def move_to_update
+    unless user_signed_in?
+      redirect_to action: :index
+    end
+  end
+
+  def move_to_destroy
+    unless user_signed_in?
+      redirect_to action: :index
+    end
+  end
+  # ログインユーザーが編集しようとしている投稿の投稿者と違ったら
+  # ルートパスに飛ばしたい
 end
