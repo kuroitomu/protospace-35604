@@ -1,6 +1,7 @@
 class PrototypesController < ApplicationController
   protect_from_forgery with: :null_session
   before_action :authenticate_user!, except: [:index, :show]
+  before_action :set_prototype, only: [:edit, :update, :show]
   before_action :move_to_index, except: [:index, :show]
 
   def index
@@ -21,17 +22,18 @@ class PrototypesController < ApplicationController
   end
 
   def show
-    @prototype = Prototype.find(params[:id])
     @comment = Comment.new
     @comments = @prototype.comments.includes(:user)
   end
 
   def edit
-    @prototype =Prototype.find(params[:id])
+    if current_user != @prototype.user  #ログインユーザーとプロトタイプ投稿者が違う場合
+       redirect_to root_path   #top-page-pathトップページに行く。
+    end
   end
 
+
   def update
-    @prototype = Prototype.find(params[:id])
     if @prototype.update(prototype_params)
        redirect_to prototype_path(@prototype.id)
   else
@@ -40,8 +42,8 @@ class PrototypesController < ApplicationController
   end
 
   def destroy
-    prototype = Prototype.find(params[:id])
-    prototype.destroy
+    @prototype = Prototype.find(params[:id])
+    @prototype.destroy!
     redirect_to root_path
   end
 
@@ -57,23 +59,11 @@ class PrototypesController < ApplicationController
     end
   end
 
-  def move_to_edit
-    unless user_signed_in?
-      redirect_to action: :index
-    end
+  def set_prototype
+    @prototype = Prototype.find(params[:id])
   end
 
-  def move_to_update
-    unless user_signed_in?
-      redirect_to action: :index
-    end
-  end
 
-  def move_to_destroy
-    unless user_signed_in?
-      redirect_to action: :index
-    end
-  end
   # ログインユーザーが編集しようとしている投稿の投稿者と違ったら
   # ルートパスに飛ばしたい
 end
